@@ -1,4 +1,4 @@
-name: mongo-sharding
+name: mongo-sharding-repl
 version: '3'
 services:
   #  сервер конфигурации
@@ -27,18 +27,18 @@ services:
       interval: 5s
       start_period: 10s
 
-#  1-й шард
-  shard1:
+#  1-й шард 1 реплика
+  shard1-1:
     image: dh-mirror.gitverse.ru/mongo:latest
-    container_name: shard1
+    container_name: shard1-1
     restart: always
     ports:
-      - "27018:27018"
+      - "27022:27022"
     networks:
       app-network:
-        ipv4_address: 173.17.0.9
+        ipv4_address: 173.17.0.11
     volumes:
-      - shard1-data:/data/db
+      - shard1-1-data:/data/db
     command:
       [
         "--shardsvr", #запуск в режиме шардинга
@@ -46,25 +46,77 @@ services:
         "shard1",     #название реплики
         "--bind_ip_all",
         "--port",
-        "27018"
+        "27022"
       ]
     healthcheck:
       test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
       interval: 5s
       start_period: 10s
 
-#  2-й шард
-  shard2:
+  #  1-й шард 2 реплика
+  shard1-2:
     image: dh-mirror.gitverse.ru/mongo:latest
-    container_name: shard2
+    container_name: shard1-2
     restart: always
     ports:
-      - "27019:27019"
+      - "27023:27023"
     networks:
       app-network:
-        ipv4_address: 173.17.0.8
+        ipv4_address: 173.17.0.12
     volumes:
-      - shard2-data:/data/db
+      - shard1-2-data:/data/db
+    command:
+      [
+        "--shardsvr", #запуск в режиме шардинга
+        "--replSet",
+        "shard1",     #название реплики
+        "--bind_ip_all",
+        "--port",
+        "27023"
+      ]
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+  #  1-й шард 3 реплика
+  shard1-3:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    container_name: shard1-3
+    restart: always
+    ports:
+      - "27024:27024"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.13
+    volumes:
+      - shard1-3-data:/data/db
+    command:
+      [
+        "--shardsvr", #запуск в режиме шардинга
+        "--replSet",
+        "shard1",     #название реплики
+        "--bind_ip_all",
+        "--port",
+        "27024"
+      ]
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+#  2-й шард 1 реплика
+  shard2-1:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    container_name: shard2-1
+    restart: always
+    ports:
+      - "27025:27025"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.14
+    volumes:
+      - shard2-1-data:/data/db
     command:
       [
         "--shardsvr",     #запуск в режиме шардинга
@@ -72,7 +124,59 @@ services:
         "shard2",         #название реплик
         "--bind_ip_all",
         "--port",
-        "27019"
+        "27025"
+      ]
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+  #  2-й шард 2 реплика
+  shard2-2:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    container_name: shard2-2
+    restart: always
+    ports:
+      - "27026:27026"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.15
+    volumes:
+      - shard2-2-data:/data/db
+    command:
+      [
+        "--shardsvr",     #запуск в режиме шардинга
+        "--replSet",
+        "shard2",         #название реплик
+        "--bind_ip_all",
+        "--port",
+        "27026"
+      ]
+    healthcheck:
+      test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
+      interval: 5s
+      start_period: 10s
+
+  #  2-й шард 3 реплика
+  shard2-3:
+    image: dh-mirror.gitverse.ru/mongo:latest
+    container_name: shard2-3
+    restart: always
+    ports:
+      - "27027:27027"
+    networks:
+      app-network:
+        ipv4_address: 173.17.0.16
+    volumes:
+      - shard2-3-data:/data/db
+    command:
+      [
+        "--shardsvr",     #запуск в режиме шардинга
+        "--replSet",
+        "shard2",         #название реплик
+        "--bind_ip_all",
+        "--port",
+        "27027"
       ]
     healthcheck:
       test: [ "CMD", "mongo", "--eval", "db.adminCommand('ping')" ]
@@ -142,8 +246,12 @@ services:
     depends_on:
       - router1
       - router2
-      - shard1
-      - shard2
+      - shard1-1
+      - shard1-2
+      - shard1-3
+      - shard2-1
+      - shard2-2
+      - shard2-3
       - configSrv
     ports:
       - 8080:8080
@@ -164,7 +272,11 @@ networks:
 
 volumes:
   config-data:
-  shard1-data:
-  shard2-data:
+  shard1-1-data:
+  shard1-2-data:
+  shard1-3-data:
+  shard2-1-data:
+  shard2-2-data:
+  shard2-3-data:
   router1_data:
   router2_data:
