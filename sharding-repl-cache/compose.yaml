@@ -242,7 +242,7 @@ services:
     build: 
       context: api_app
       dockerfile: Dockerfile
-    image: kazhem/pymongo_api:1.0.0
+#    image: kazhem/pymongo_api:1.0.0
     depends_on:
       - router1
       - router2
